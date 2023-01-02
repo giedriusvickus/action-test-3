@@ -12,7 +12,7 @@ jobs:
         strategy:
             matrix:
                 node-version: [ 14.x ]
-                branch: [ main ]
+                branch: [ main, stage ]
         outputs:
             passed: ${{ steps.passed.outputs.pass }}
         steps:
