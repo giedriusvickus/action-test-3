@@ -10,10 +10,14 @@ jobs:
         with:
             branch: main
             node-version: 14.x
+            dir: .
+            cache-dependency-path: yarn.lock
         secrets: inherit
     promote-stage:
         uses: ./.github/workflows/promote-reuse.yml
         with:
             branch: stage
             node-version: 14.x
+            dir: .
+            cache-dependency-path: yarn.lock
         secrets: inherit

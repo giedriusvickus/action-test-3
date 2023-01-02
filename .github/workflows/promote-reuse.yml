@@ -5,6 +5,10 @@ on:
                 type: string
             node-version:
                 type: string
+            dir:
+                type: string
+            cache-dependency-path:
+                type: string
 
 jobs:
     check:
@@ -20,7 +24,7 @@ jobs:
 
             -   name: Get latest version of ${{ github.event.client_payload.LIBRARY }} from package.json. Force RC is - ${{ github.event.client_payload.FORCERC }}
                 id: version
-                run: echo "tag=$(grep '"${{ github.event.client_payload.LIBRARY }}"' package.json | cut -d '"' -f 4 | head -n 1)" >> $GITHUB_OUTPUT
+                run: cd ${{ inputs.dir }} && echo "tag=$(grep '"${{ github.event.client_payload.LIBRARY }}"' package.json | cut -d '"' -f 4 | head -n 1)" >> $GITHUB_OUTPUT
                 shell: bash
 
             -   run: echo "Pushed version - ${{ github.event.client_payload.VERSION }}. Found version - ${{ steps.version.outputs.tag }}"
@@ -48,22 +52,20 @@ jobs:
                 with:
                     node-version: ${{ inputs.node-version }}
                     cache: 'yarn'
+                    cache-dependency-path: ${{ inputs.cache-dependency-path }}
 
             -   name: Yarn timeout config
-                run: yarn config set network-timeout 300000
+                run: cd ${{ inputs.dir }} && yarn config set network-timeout 300000
 
-            #      - name: Install dependencies
-            #        if: ${{ (github.event.client_payload.FORCERC == 'true' || !contains(steps.version.outputs.tag, '-rc.')) && github.event.client_payload.VERSION != steps.version.outputs.tag }}
-            #        run: yarn --prefer-offline
-            #
-            #      - name: Install version ${{ github.event.client_payload.VERSION }} for ${{ github.event.client_payload.LIBRARY }} package
-            #        if: ${{ (github.event.client_payload.FORCERC == 'true' || !contains(steps.version.outputs.tag, '-rc.')) && github.event.client_payload.VERSION != steps.version.outputs.tag }}
-            #        run: yarn upgrade ${{ github.event.client_payload.LIBRARY }}@${{ github.event.client_payload.VERSION }}
+            -   name: Install dependencies
+                run: cd ${{ inputs.dir }} && yarn --prefer-offline
+
+            -   name: Install version ${{ github.event.client_payload.VERSION }} for ${{ github.event.client_payload.LIBRARY }} package
+                run: cd ${{ inputs.dir }} && yarn upgrade ${{ github.event.client_payload.LIBRARY }}@${{ github.event.client_payload.VERSION }}
 
             -   run: echo "Run this if success upgrade"
 
-    #      - uses: stefanzweifel/git-auto-commit-action@v4
-    #        if: ${{ (github.event.client_payload.FORCERC == 'true' || !contains(steps.version.outputs.tag, '-rc.')) && github.event.client_payload.VERSION != steps.version.outputs.tag }}
-    #        with:
-    #          commit_message: Automatic version bump ${{ github.event.client_payload.LIBRARY }}@${{ github.event.client_payload.VERSION }}
+            -   uses: stefanzweifel/git-auto-commit-action@v4
+                with:
+                    commit_message: Automatic version bump ${{ github.event.client_payload.LIBRARY }}@${{ github.event.client_payload.VERSION }}
 
