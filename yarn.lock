@@ -1239,10 +1239,10 @@ acorn@^7.1.0:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-7.4.1.tgz#feaed255973d2e77555b83dbc08851a6c63520fa"
   integrity sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==
 
-action-test-1@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/action-test-1/-/action-test-1-1.0.1.tgz#ac486ad92eb03e544bbc72c9ae1e5241575a84ff"
-  integrity sha512-YVX7kNK3frTjUkPA83OcmfmqJizvDQbjrhOw4/QnUl3ycW+4lrNWdzKHIYG1uQMKJjlEsxEgot5FFtGGKi6QRA==
+action-test-1@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/action-test-1/-/action-test-1-1.0.2.tgz#eab6ec91282a76ec0e661639a8cd2a63cc625b62"
+  integrity sha512-cgkxraRaCEQJVWfuaYxteaVOOUOVI1S81Jjf4Y5jJBbEFj6gMqamnRLZsISlA27Nb8BXdB1vcJ1vc1gr5hd+dg==
   dependencies:
     microbundle-crl "^0.13.10"
     prettier "^2.8.1"
