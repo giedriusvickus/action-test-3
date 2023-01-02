@@ -1,0 +1,69 @@
+on:
+    workflow_call:
+        inputs:
+            branch:
+                type: string
+            node-version:
+                type: string
+
+jobs:
+    check:
+        name: Check if version change is neccessary
+        runs-on: ubuntu-latest
+        outputs:
+            passed: ${{ steps.passed.outputs.pass }}
+        steps:
+            -   uses: actions/checkout@v3
+                with:
+                    ref: ${{ inputs.branch }}
+                    token: ${{ secrets.AUTH_TOKEN }}
+
+            -   name: Get latest version of ${{ github.event.client_payload.LIBRARY }} from package.json. Force RC is - ${{ github.event.client_payload.FORCERC }}
+                id: version
+                run: echo "tag=$(grep '"${{ github.event.client_payload.LIBRARY }}"' package.json | cut -d '"' -f 4 | head -n 1)" >> $GITHUB_OUTPUT
+                shell: bash
+
+            -   run: echo "Pushed version - ${{ github.event.client_payload.VERSION }}. Found version - ${{ steps.version.outputs.tag }}"
+            -   run: echo "Check RC Force - ${{ github.event.client_payload.FORCERC }}. Check if version is RC - ${{ contains(steps.version.outputs.tag, '-rc.') }}"
+
+            -   name: Set chech output
+                id: passed
+                if: ${{ (github.event.client_payload.FORCERC == 'true' || !contains(steps.version.outputs.tag, '-rc.')) && github.event.client_payload.VERSION != steps.version.outputs.tag }}
+                run: echo "pass=true" >> $GITHUB_OUTPUT
+                shell: bash
+    Bump:
+        name: Bump package version & commit
+        needs: check
+        if: needs.check.outputs.passed == 'true'
+        runs-on: ubuntu-latest
+
+        steps:
+            -   uses: actions/checkout@v3
+                with:
+                    ref: ${{ inputs.branch }}
+                    token: ${{ secrets.AUTH_TOKEN }}
+
+            -   name: Use Node.js
+                uses: actions/setup-node@v3
+                with:
+                    node-version: ${{ inputs.node-version }}
+                    cache: 'yarn'
+
+            -   name: Yarn timeout config
+                run: yarn config set network-timeout 300000
+
+            #      - name: Install dependencies
+            #        if: ${{ (github.event.client_payload.FORCERC == 'true' || !contains(steps.version.outputs.tag, '-rc.')) && github.event.client_payload.VERSION != steps.version.outputs.tag }}
+            #        run: yarn --prefer-offline
+            #
+            #      - name: Install version ${{ github.event.client_payload.VERSION }} for ${{ github.event.client_payload.LIBRARY }} package
+            #        if: ${{ (github.event.client_payload.FORCERC == 'true' || !contains(steps.version.outputs.tag, '-rc.')) && github.event.client_payload.VERSION != steps.version.outputs.tag }}
+            #        run: yarn upgrade ${{ github.event.client_payload.LIBRARY }}@${{ github.event.client_payload.VERSION }}
+
+            -   run: echo "Run this if success upgrade"
+
+    #      - uses: stefanzweifel/git-auto-commit-action@v4
+    #        if: ${{ (github.event.client_payload.FORCERC == 'true' || !contains(steps.version.outputs.tag, '-rc.')) && github.event.client_payload.VERSION != steps.version.outputs.tag }}
+    #        with:
+    #          commit_message: Automatic version bump ${{ github.event.client_payload.LIBRARY }}@${{ github.event.client_payload.VERSION }}
+
